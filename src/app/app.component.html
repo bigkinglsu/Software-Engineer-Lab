@@ -1,0 +1,106 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">&lt;/&gt;</span><span>SOFTWARE ENGINEER <b>LAB</b></span></div>
+    <div class="top-actions">
+      <span class="trained"><span aria-hidden="true">✦</span> Engineers trained today <strong>{{ completionCount }}</strong></span>
+      <button class="sound-button" type="button" (click)="soundOn = !soundOn" [attr.aria-label]="soundOn ? 'Mute sound' : 'Enable sound'">{{ soundOn ? '♫ Sound on' : '♪ Sound off' }}</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <span class="eyebrow"><span class="live-dot"></span> INTERACTIVE CAREER FAIR CHALLENGE</span>
+      <h1>Can you <em>debug</em> a robot?</h1>
+      <p>Real engineers investigate problems, change code, and test again. Your mission: help Byte reach the finish line.</p>
+    </section>
+
+    @if (completed) {
+      <section class="completion" aria-live="polite">
+        <div class="confetti" aria-hidden="true">
+          @for (piece of confetti; track piece) { <span [style.--i]="piece"></span> }
+        </div>
+        <div class="trophy">🏆</div>
+        <div class="eyebrow">MISSION COMPLETE</div>
+        <h2>Junior Software Engineer</h2>
+        <p>You spotted three problems, changed the program, and tested your fixes. That is what software engineers do!</p>
+        <div class="certificate">Awarded to <strong>{{ robotName.trim() || 'Byte' }}'s engineer</strong> <span>✦</span> Engineer #{{ completionCount }}</div>
+        <button class="primary restart" type="button" (click)="reset()">Next engineer <span aria-hidden="true">→</span></button>
+      </section>
+    } @else {
+      <div class="workspace">
+        <section class="lab-panel" aria-label="Robot challenge">
+          <div class="panel-top">
+            <div class="panel-heading"><span class="panel-kicker">YOUR MISSION</span><h2>{{ title }}</h2></div>
+            <span class="level">LEVEL {{ stage + 1 }} / 3</span>
+          </div>
+          <div class="progress-track" role="progressbar" [attr.aria-valuenow]="stage" aria-valuemin="0" aria-valuemax="3" aria-label="Challenges completed"><span [style.width.%]="progress"></span></div>
+          <p class="prompt">{{ hint }}</p>
+
+          <div class="scene" [class.scene-running]="running" [class.scene-passed]="passed">
+            <div class="scene-grid"></div>
+            <span class="scene-label">TEST ENVIRONMENT / 001</span>
+            <div class="sun"></div>
+            <div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+            <div class="ground"></div>
+            <div class="robot-wrap" [class.move]="running || passed" [class.stopped]="!powerOn && stage === 0">
+              <div class="robot" [style.--robot-color]="robotColor">
+                <div class="antenna"></div>
+                <div class="robot-head"><span class="eye"></span><span class="eye"></span><span class="mouth"></span></div>
+                <div class="robot-body"><span class="heart">♥</span></div>
+                <div class="robot-feet"><i></i><i></i></div>
+              </div>
+              <span class="robot-tag">{{ robotName.trim() || 'Byte' }}</span>
+            </div>
+            @if (stage > 0) { <div class="gate" [class.open]="gateOpen"><div class="gate-top"></div><div class="gate-bar"></div></div> }
+            <div class="finish"><span>★</span><span>FINISH</span></div>
+          </div>
+
+          <div class="status" [class.bug]="messageKind === 'bug'" [class.success]="messageKind === 'success'" role="status" aria-live="polite">
+            <span class="status-icon">{{ messageKind === 'bug' ? '🐛' : messageKind === 'success' ? '✓' : '💡' }}</span>
+            <span>{{ message }}</span>
+          </div>
+
+          <div class="action-row">
+            @if (passed) {
+              <button class="primary" type="button" (click)="next()">Next challenge <span aria-hidden="true">→</span></button>
+            } @else {
+              <button class="primary" type="button" (click)="run()" [disabled]="running"><span aria-hidden="true">▶</span> {{ running ? 'Running…' : 'Run program' }}</button>
+            }
+            <button class="secondary" type="button" (click)="reset()">↺ Reset for next student</button>
+          </div>
+        </section>
+
+        <aside class="code-panel" aria-label="Code controls">
+          <div class="code-header"><span class="file-dot"></span><span>robot.ts</span><span class="code-label">LIVE CODE</span></div>
+          <div class="code-content">
+            <div class="comment">// Change a value. Run it. See what happens.</div>
+            <div class="code-line"><span class="line-no">1</span><span class="code-key">let</span> name = <span class="code-string">"{{ robotName.trim() || 'Byte' }}"</span>;</div>
+            <div class="code-line"><span class="line-no">2</span><span class="code-key">let</span> color = <span class="code-string">"{{ robotColor }}"</span>;</div>
+            <div class="code-line" [class.highlight]="stage === 0"><span class="line-no">3</span><span class="code-key">let</span> powerOn = <span class="code-bool">{{ powerOn }}</span>;</div>
+            <div class="code-line" [class.highlight]="stage === 1"><span class="line-no">4</span><span class="code-key">let</span> gateOpen = <span class="code-bool">{{ gateOpen }}</span>;</div>
+            <div class="code-line" [class.highlight]="stage === 2"><span class="line-no">5</span><span class="code-key">let</span> speed = <span class="code-number">{{ speed }}</span>;</div>
+            <div class="code-comment"><span class="line-no">6</span>// Press Run to test your changes</div>
+          </div>
+          <div class="editor-controls">
+            <span class="edit-label">EDIT THE PROGRAM</span>
+            @if (stage === 0) {
+              <label class="edit-row" for="power"><span><strong>powerOn</strong><small>Can the robot move?</small></span><span class="select-wrap"><select id="power" [(ngModel)]="powerOn"><option [ngValue]="false">false</option><option [ngValue]="true">true</option></select></span></label>
+            }
+            @if (stage === 1) {
+              <label class="edit-row" for="gate"><span><strong>gateOpen</strong><small>Is the path clear?</small></span><span class="select-wrap"><select id="gate" [(ngModel)]="gateOpen"><option [ngValue]="false">false</option><option [ngValue]="true">true</option></select></span></label>
+            }
+            @if (stage === 2) {
+              <label class="slider-label" for="speed"><span><strong>speed</strong><small>How fast should Byte go?</small></span><b>{{ speed }}</b></label>
+              <input id="speed" type="range" min="1" max="10" step="1" [(ngModel)]="speed"><div class="range-labels"><span>1 / slow</span><span>10 / fast</span></div>
+            }
+            <div class="divider"></div>
+            <label class="custom-row" for="name">Robot name <input id="name" type="text" maxlength="16" [(ngModel)]="robotName" aria-label="Robot name"></label>
+            <label class="custom-row" for="color">Robot color <input id="color" type="color" [(ngModel)]="robotColor" aria-label="Robot color"></label>
+          </div>
+          <div class="tip"><span>✳</span><p><strong>Engineer tip</strong><br>When a program fails, inspect one value, change it, and test again.</p></div>
+        </aside>
+      </div>
+    }
+    <footer>Built for curious minds <span>✦</span> No sign-in or internet needed during the demo</footer>
+  </main>
+</div>
